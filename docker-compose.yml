@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+
+# INFRASTRUCTURE
+  mysql:
+    image: mysql/mysql-server:8.0
+    container_name: mysql
+    cap_add:
+      - SYS_NICE
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_DATABASE: super_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: admin
+    restart: on-failure
+    volumes:
+      - ./dependencies/mysql/config.sql:/docker-entrypoint-initdb.d/data.sql
+
+  activemq:
+    image: rmohr/activemq:5.15.9
+    container_name: activemq
+    ports:
+      - "8161:8161"
+      - "61616:61616"
+      - "61613:61613"
+    environment:
+      ACTIVEMQ_ADMIN_LOGIN: admin
+      ACTIVEMQ_ADMIN_PASSWORD: admin

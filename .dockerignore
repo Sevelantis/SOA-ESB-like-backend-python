@@ -1,0 +1,13 @@
+*.env
+.gitignore
+.git
+README.md
+venv/
+tests/
+Makefile
+sample_images/
+Dockerfile
+certs/
+**.DS_Store**
+.pytest_cache/
+docker-compose.yml

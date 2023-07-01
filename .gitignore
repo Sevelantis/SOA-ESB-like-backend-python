@@ -1,0 +1,14 @@
+*.env
+__pycache__/
+*.py[cod]
+*.iml
+.directory
+.idea
+venv/
+__
+.vscode/
+src/template/*
+certs/
+.DS_Store
+sample_images/result.jpg
+sample_images/reply.png

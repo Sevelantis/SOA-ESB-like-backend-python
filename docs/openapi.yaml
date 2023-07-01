@@ -1,0 +1,304 @@
+openapi: 3.0.0
+info:
+  title: My API
+  version: 1.0.0
+paths:
+  /api/v1/users/{id}:
+    get:
+      security:
+        - cookieAuth: []
+      summary: Get single user by ID
+      parameters:
+        - name: id
+          in: path
+          description: ID of user to fetch
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '422':
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+  /api/v1/convert/to-jpeg:
+    post:
+      security:
+        - cookieAuth: []
+      summary: Convert image to jpeg
+      description: Convert image to jpeg
+      requestBody:
+        description: Content-type is `multipart/form-data`, consists of 2 parts. First part is JSON, second part is the image.
+        required: true
+        content:
+          multipart/form-data: # Media type
+            schema:            # Request payload
+              type: object
+              properties:       # Request parts
+                image:          # Part1 (object - json data)
+                  type: object
+                  required:
+                    - format
+                    - size
+                  properties:
+                    format:
+                      type: string
+                      default: jpeg
+                    size:
+                      type: integer
+                      default: -1
+                imageToConvert:  # Part 2 (an image)
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Conversion'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '422':
+          description: UnprocessableEntity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntity'
+  /api/v1/login:
+    get:
+      security:
+        - cookieAuth: []
+      summary: Get oauth login page
+      description: Get oauth login page
+      responses:
+        '302':
+          description: Found
+        '404':
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+  /api/v1/auth:
+    get:
+      security:
+        - cookieAuth: []
+      summary: Auth User
+      description: Auth User
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+  /api/v1/logout:
+    get:
+      security:
+        - cookieAuth: []
+      summary: Logout User
+      description: Logout User
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+        '404':
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+                
+  
+components:
+  schemas:
+    # Entity
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - notification_preferences
+      properties:
+        id:
+          type: integer
+          description: User ID
+        email:
+          type: string
+          description: User email
+        notification_preferences:
+          type: object
+          properties:
+            email:
+              type: boolean
+              description: When active notify user with email
+              default: true
+            whatsapp:
+              type: boolean
+              description: When active notify user with whatsapp
+              default: false
+            sms:
+              type: boolean
+              description: When active notify user with sms
+              default: false
+        premium:
+          type: object
+          properties:
+            active:
+              type: boolean
+              description: When active a user is a premium user
+        conv_history:
+          type: array
+          items:
+            type: string
+            description: "User's download links from his conversion history"
+            default: "localhost.com/resource.jpeg"
+    Conversion:
+      required:
+        - format
+        - size
+        - link
+      properties:
+        format:
+          type: string
+          default: jpeg
+        size:
+          type: integer
+          description: image size in bytes
+          default: -1
+        link:
+          type: string
+          description: image download link
+          default: "localhost:1234/image.jpeg"
+    conversion_details:
+      type: object
+      required:
+        - time
+      properties:
+        time:
+          type: integer
+          description: conversion time in milliseconds
+  
+    
+    # Error Response
+    Unauthorized:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: User is not authorized to perform this operation
+          default: Unauthorized.
+        code:
+          type: integer
+          default: 401
+    NotFound:
+      type: object
+      required:
+        - message
+        - code
+      properties:
+        message:
+          type: string
+          description: Requested resource could not be found
+          default: Not found.
+        code:
+          type: integer
+          default: 404
+    BadRequest:
+      type: object
+      required:
+        - message
+        - code
+      properties:
+        message:
+          type: string
+          description: Request is not correct
+          default: Bad request.
+        code:
+          type: integer
+          default: 400
+    UnprocessableEntity:
+      type: object
+      required:
+        - message
+        - code
+      properties:
+        message:
+          type: string
+          description: Request is correct, but server could not process it
+          default: Unprocessable entity.
+        code:
+          type: integer
+          default: 422
+            
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: MY_SUPER_COOOKIE  # cookie name
+
